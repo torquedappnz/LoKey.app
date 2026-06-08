@@ -1,0 +1,212 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  
+  --color-brand-primary: #a855f7; /* Vibrant Electric Purple */
+  --color-brand-accent: #ec4899; /* Vibrant Neon Pink/Magenta */
+  --color-brand-bg: #faf5ff; /* Light Pastel Lilac */
+  --color-brand-dark-bg: #090114; /* Deep Velvet Space Black/Purple */
+}
+
+/* Custom styles for Liquid Glass Design Language */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-brand-bg);
+  color: #1f1235;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  overflow-x: hidden;
+}
+
+/* Apply Dark Theme Styles when document has .dark class */
+.dark body {
+  background-color: var(--color-brand-dark-bg);
+  color: #f3eefc;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+/* Liquid frosted glass card - light and dark modes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(168, 85, 247, 0.06), 
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.5);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark .glass-panel {
+  background: rgba(18, 9, 32, 0.65);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4), 
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Interactive Glass Cards */
+.glass-panel-interactive {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 20px 0 rgba(168, 85, 247, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel-interactive:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(168, 85, 247, 0.3);
+  box-shadow: 0 10px 25px 0 rgba(168, 85, 247, 0.12);
+}
+
+.dark .glass-panel-interactive {
+  background: rgba(20, 10, 36, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 24px 0 rgba(0, 0, 0, 0.25);
+}
+
+.dark .glass-panel-interactive:hover {
+  transform: translateY(-2px);
+  background: rgba(28, 14, 50, 0.75);
+  border-color: rgba(168, 85, 247, 0.25);
+  box-shadow: 0 12px 30px 0 rgba(168, 85, 247, 0.2);
+}
+
+/* Glass inputs */
+.glass-input {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(168, 85, 247, 0.15);
+  backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+}
+
+.dark .glass-input {
+  background: rgba(15, 6, 28, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dark .glass-input:focus {
+  background: rgba(24, 10, 42, 0.8);
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25);
+}
+
+/* Glassy bottom navigation */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 -4px 30px rgba(109, 40, 217, 0.03);
+}
+
+.dark .glass-nav {
+  background: rgba(12, 5, 22, 0.82);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Glass glossy buttons */
+.btn-glass-primary {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3),
+              inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-glass-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.45),
+              inset 0 1.5px 1.5px rgba(255, 255, 255, 0.4);
+  filter: brightness(1.05);
+}
+
+.btn-glass-primary:active {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+}
+
+/* Slow moving decorative organic background blobs for the active liquid layer */
+.liquid-blob-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.liquid-blob-1 {
+  position: absolute;
+  top: -10%;
+  right: -10%;
+  width: 50vw;
+  height: 50vw;
+  min-width: 350px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(236, 72, 153, 0.03) 70%);
+  border-radius: 43% 57% 73% 27% / 54% 38% 62% 46%;
+  animation: liquidOrbit 25s infinite alternate ease-in-out;
+}
+
+.liquid-blob-2 {
+  position: absolute;
+  bottom: -15%;
+  left: -10%;
+  width: 60vw;
+  height: 60vw;
+  min-width: 400px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.12) 0%, rgba(168, 85, 247, 0.02) 75%);
+  border-radius: 63% 37% 55% 45% / 40% 60% 35% 65%;
+  animation: liquidOrbit 30s infinite alternate-reverse ease-in-out;
+}
+
+.dark .liquid-blob-1 {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.28) 0%, rgba(20, 3, 40, 0) 70%);
+}
+
+.dark .liquid-blob-2 {
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.22) 0%, rgba(20, 3, 40, 0) 70%);
+}
+
+@keyframes liquidOrbit {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    border-radius: 43% 57% 73% 27% / 54% 38% 62% 46%;
+  }
+  50% {
+    transform: translate(8%, 10%) rotate(180deg) scale(1.15);
+    border-radius: 50% 50% 30% 70% / 50% 60% 40% 60%;
+  }
+  100% {
+    transform: translate(-5%, -5%) rotate(360deg) scale(0.9);
+    border-radius: 63% 37% 55% 45% / 40% 60% 35% 65%;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -1,0 +1,5 @@
+{
+  "name": "LoKey",
+  "description": "Designed to be deleted. A Gen Z matchmaking platform focusing on real-world connections and deep compatibility over transactional swiping.",
+  "requestFramePermissions": ["geolocation"]
+}
