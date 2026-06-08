@@ -198,6 +198,13 @@ function AppContent() {
   const [reportsList, setReportsList] = useState<any[]>([]);
   const [copiedSchema, setCopiedSchema] = useState(false);
 
+  // Splash / auth mode
+  const [authMode, setAuthMode] = useState<'splash' | 'login' | 'register'>('splash');
+
+  // Step-by-step bio wizard
+  const [bioStep, setBioStep] = useState(0);
+  const [showWelcome, setShowWelcome] = useState(false);
+
   // Custom filter preferences state
   const [filterAgeMin, setFilterAgeMin] = useState<number>(() => {
     return Number(localStorage.getItem('lokey_filter_age_min')) || 18;
@@ -913,20 +920,20 @@ function AppContent() {
     // Email confirmation pending screen
     if (emailConfirmationPending) {
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-brand-bg dark:bg-brand-dark-bg text-center relative overflow-hidden transition-colors duration-500">
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#090114] text-center relative overflow-hidden">
           <div className="liquid-blob-container">
             <div className="liquid-blob-1"></div>
             <div className="liquid-blob-2"></div>
           </div>
           <div className="relative z-10 max-w-sm w-full space-y-6">
             <LoKeyLogo className="h-20 mx-auto" />
-            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 shadow-xl border border-zinc-100 dark:border-zinc-800 space-y-4">
+            <div className="glass-panel rounded-[2.5rem] p-8 space-y-4">
               <div className="w-16 h-16 bg-brand-primary/10 rounded-full flex items-center justify-center mx-auto">
                 <Send className="w-7 h-7 text-brand-primary" />
               </div>
-              <h2 className="text-2xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">Check your email</h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                We've sent a confirmation link to <span className="font-bold text-zinc-800 dark:text-zinc-200">{pendingEmail}</span>. Click the link in your email to activate your account.
+              <h2 className="text-2xl font-black text-white tracking-tight">Check your email</h2>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                We've sent a confirmation link to <span className="font-bold text-white">{pendingEmail}</span>. Click the link in your email to activate your account.
               </p>
               <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">
                 Didn't receive it? Check your spam folder.
@@ -943,76 +950,74 @@ function AppContent() {
       );
     }
 
+    // Splash screen
+    if (authMode === 'splash') {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#090114] text-center relative overflow-hidden">
+          <div className="liquid-blob-container">
+            <div className="liquid-blob-1"></div>
+            <div className="liquid-blob-2"></div>
+          </div>
+          <div className="relative z-10 flex flex-col items-center max-w-sm w-full gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
+              className="w-full"
+            >
+              <LoKeyLogo className="h-28 w-full mb-4" />
+              <p className="text-zinc-400 font-semibold text-base tracking-wide">Designed to be deleted.</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
+              className="w-full space-y-3"
+            >
+              <button
+                onClick={() => setAuthMode('register')}
+                className="w-full py-4 rounded-2xl font-black text-white text-sm tracking-wide btn-glass-primary shadow-xl"
+              >
+                Create Account
+              </button>
+              <button
+                onClick={() => setAuthMode('login')}
+                className="w-full py-4 rounded-2xl font-black text-sm tracking-wide glass-panel border border-white/10 text-white/80 hover:text-white transition-colors"
+              >
+                Log In
+              </button>
+            </motion.div>
+
+            <p className="text-[10px] text-zinc-600 font-semibold tracking-widest uppercase">
+              Dunedin · Est. 2026
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Auth form (login or register)
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-brand-bg dark:bg-brand-dark-bg text-center relative overflow-hidden transition-colors duration-500">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#090114] text-center relative overflow-hidden">
         {/* Organic Liquid Backdrops */}
         <div className="liquid-blob-container">
           <div className="liquid-blob-1"></div>
           <div className="liquid-blob-2"></div>
         </div>
 
-        <div className="mb-4 relative z-10">
-          <LoKeyLogo className="h-24 mb-3" />
-          <p className="text-zinc-500 dark:text-zinc-400 font-extrabold text-lg tracking-tight">Designed to be deleted.</p>
-        </div>
-
-        <div className="max-w-sm w-full space-y-6 relative z-10">
-          {/* Video Intro Section with glass border */}
-          <div 
-            onClick={togglePlay}
-            className="relative w-full aspect-video bg-zinc-950/80 rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white/80 dark:border-white/10 group cursor-pointer"
-          >
-            <video 
-              ref={videoRef}
-              key={introVideoUrl}
-              src={introVideoUrl}
-              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-              autoPlay
-              loop
-              muted
-              playsInline
-              onPlay={() => setIsVideoPlaying(true)}
-              onPause={() => setIsVideoPlaying(false)}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6 text-left pointer-events-none">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-pink-500 rounded-full animate-pulse" />
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Real-World Connections</p>
-              </div>
-              <h3 className="text-white font-black text-lg leading-tight">
-                No Transactional Swiping.
-              </h3>
-            </div>
-            <div className={`absolute inset-0 flex items-center justify-center transition-opacity pointer-events-none ${isVideoPlaying ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
-                {isVideoPlaying ? (
-                  <div className="flex gap-1">
-                    <div className="w-1.5 h-6 bg-white rounded-full" />
-                    <div className="w-1.5 h-6 bg-white rounded-full" />
-                  </div>
-                ) : (
-                  <Play className="w-8 h-8 text-white fill-current translate-x-0.5" />
-                )}
-              </div>
-            </div>
-            
+        <div className="mb-6 relative z-10 w-full max-w-sm">
+          <div className="flex items-center gap-3 mb-6">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleGenerateIntro();
-              }}
-              disabled={isGeneratingVideo}
-              className="absolute top-4 right-4 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white p-2 rounded-full border border-white/20 transition-all active:scale-90 disabled:opacity-50"
-              title="Generate Custom Intro Video"
+              onClick={() => { setAuthMode('splash'); setOtpState('idle'); setShowEmailPreview(false); setAuthError(null); }}
+              className="p-2 text-zinc-400 hover:text-white transition-colors"
             >
-              {isGeneratingVideo ? (
-                <Loader2 className="w-4 h-4 animate-spin text-white" />
-              ) : (
-                <Video className="w-4 h-4 text-white" />
-              )}
+              <ArrowLeft className="w-5 h-5" />
             </button>
+            <LoKeyLogo className="h-10 flex-1" />
           </div>
 
+        <div className="max-w-sm w-full relative z-10">
           <div className="glass-panel p-8 rounded-[3rem] text-left relative overflow-hidden transition-all duration-300">
             {otpState === 'verifying' ? (
               // 2FA 4-Digit Verification Form View
@@ -1103,22 +1108,22 @@ function AppContent() {
                 </div>
               </div>
             ) : (
-              // Classic credentials login/signup layout
+              // Credentials form
               <>
-                {/* Tab selector */}
-                <div className="flex border-b border-zinc-150 dark:border-zinc-800/80 mb-6">
-                  <button 
-                    onClick={() => { setAuthTab('login'); setAuthError(null); }}
-                    className={`flex-1 pb-3 text-center font-black text-sm tracking-tight transition-all ${authTab === 'login' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-zinc-400 dark:text-zinc-500'}`}
-                  >
-                    Log In
-                  </button>
-                  <button 
-                    onClick={() => { setAuthTab('register'); setAuthError(null); }}
-                    className={`flex-1 pb-3 text-center font-black text-sm tracking-tight transition-all ${authTab === 'register' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-zinc-400 dark:text-zinc-500'}`}
-                  >
-                    Sign Up
-                  </button>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+                    {authMode === 'register' ? 'Create account' : 'Welcome back'}
+                  </h2>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    {authMode === 'register' ? 'Already have an account? ' : "Don't have an account? "}
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode(authMode === 'register' ? 'login' : 'register'); setAuthTab(authMode === 'register' ? 'login' : 'register'); setAuthError(null); }}
+                      className="text-brand-accent font-bold hover:underline"
+                    >
+                      {authMode === 'register' ? 'Log in' : 'Sign up'}
+                    </button>
+                  </p>
                 </div>
 
                 <form onSubmit={handleAuthAction} className="space-y-4">
@@ -1129,7 +1134,7 @@ function AppContent() {
                     </div>
                   )}
 
-                  {authTab === 'register' && (
+                  {authMode === 'register' && (
                     <div>
                       <label className="text-[10px] font-black uppercase tracking-widest text-[#FF4B6E] block mb-1">Your Full Name</label>
                       <input 
@@ -1174,15 +1179,16 @@ function AppContent() {
                     ) : (
                       <Lock className="w-4 h-4" />
                     )}
-                    {isSigningIn ? 'Processing...' : authTab === 'login' ? 'Login with Supabase' : 'Create Account'}
+                    {isSigningIn ? 'Processing...' : authMode === 'login' ? 'Log In' : 'Create Account'}
                   </button>
                 </form>
               </>
             )}
           </div>
-          <p className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.22em] font-black">
-            Secure • Supabase Protected • Verified
+          <p className="text-[9px] text-zinc-600 uppercase tracking-[0.22em] font-black text-center mt-4">
+            Secure · Supabase · Verified
           </p>
+        </div>
         </div>
 
         {/* LoKey Brand Styled Email Simulator Inbox Preview popup (matches design language & color schema) */}
@@ -1305,7 +1311,8 @@ function AppContent() {
   const renderOnboardingNameAge = () => {
     const genders = ['Male', 'Female', 'Gender Diverse'];
     const orientations = ['Men', 'Women', 'Gender Diverse'];
-    const hobbiesOptions = ['Hiking', 'Gigs', 'Gaming', 'Coffee', 'Fitness', 'Art', 'Woodworking', 'Surfing'];
+    const hobbiesOptions = ['Hiking', 'Gigs', 'Gaming', 'Coffee', 'Fitness', 'Art', 'Woodworking', 'Surfing', 'Cooking', 'Travel', 'Reading', 'Sport'];
+    const BIO_STEPS = 7; // name, dob, gender, interested in, hobbies, school, job
 
     const toggleInterestedIn = (val: string) => {
       const current = userProfile.interestedIn || [];
@@ -1325,183 +1332,251 @@ function AppContent() {
       }
     };
 
+    // Welcome splash after name entered
+    if (showWelcome) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="min-h-screen flex flex-col items-center justify-center p-8 bg-brand-dark-bg text-center"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <LoKeyLogo className="h-20 mb-8" />
+            <h1 className="text-4xl font-black tracking-tight text-white leading-tight">
+              Welcome to LoKey,<br />
+              <span className="text-brand-accent">{userProfile.name}</span> 👋
+            </h1>
+            <p className="text-zinc-400 mt-4 text-base font-medium">Let's build your profile.</p>
+          </motion.div>
+        </motion.div>
+      );
+    }
+
+    // Step-by-step bio wizard
+    const isUnder18 = userProfile.dob ? (() => {
+      const d = new Date(userProfile.dob!);
+      const t = new Date();
+      return t < new Date(d.getFullYear() + 18, d.getMonth(), d.getDate());
+    })() : false;
+    const daysLeft = userProfile.dob && isUnder18 ? Math.ceil((new Date(new Date(userProfile.dob!).getFullYear() + 18, new Date(userProfile.dob!).getMonth(), new Date(userProfile.dob!).getDate()).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+    const stepTitles = [
+      "What's your name?",
+      "When were you born?",
+      "What's your gender?",
+      "Who are you open to meeting?",
+      "What are your hobbies?",
+      "Where do you study?",
+      "What do you do for work?",
+    ];
+
+    const stepCanContinue = [
+      !!userProfile.name?.trim(),
+      !!userProfile.dob && !isUnder18,
+      !!userProfile.gender,
+      (userProfile.interestedIn?.length || 0) > 0,
+      true, // hobbies optional
+      true, // school optional
+      true, // job optional
+    ];
+
+    const handleBioNext = async () => {
+      if (bioStep === 0) {
+        // Show welcome screen briefly then advance
+        setShowWelcome(true);
+        setTimeout(() => {
+          setShowWelcome(false);
+          setBioStep(1);
+        }, 2000);
+        return;
+      }
+      if (bioStep < BIO_STEPS - 1) {
+        setBioStep(prev => prev + 1);
+      } else {
+        await updateProfile({ ...userProfile, hasConfirmedNameAge: true });
+        setView('onboarding');
+      }
+    };
+
     return (
-      <div className="min-h-screen flex flex-col p-6 max-w-md mx-auto bg-brand-bg dark:bg-brand-dark-bg overflow-y-auto">
-        <div className="mt-4 mb-4">
-          <h1 className="text-4xl font-black tracking-tighter text-brand-primary">LoKey</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 text-xs font-semibold">Step 1: Bio Profile Onboarding</p>
-        </div>
-
-        <div className="mt-4 mb-4">
-          <h2 className="text-3xl font-extrabold tracking-tighter mb-1 text-zinc-900 dark:text-zinc-100">Who are you?</h2>
-          <p className="text-zinc-400 dark:text-zinc-300 text-sm font-medium">Input your background context below.</p>
-        </div>
-
-        <div className="flex-1 space-y-6 pb-24">
-          <div className="space-y-4">
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-2 mb-2 block">Your Name</label>
-              <input 
-                type="text"
-                value={userProfile.name}
-                onChange={(e) => setUserProfile(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter your name"
-                className="w-full p-4 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-100 rounded-2xl border-2 border-transparent focus:border-brand-primary dark:focus:border-brand-primary shadow-sm font-bold outline-none transition-all"
+      <div className="min-h-screen flex flex-col max-w-md mx-auto bg-brand-bg dark:bg-brand-dark-bg">
+        {/* Progress bar */}
+        <div className="px-6 pt-6 pb-2">
+          <div className="flex items-center gap-3 mb-4">
+            {bioStep > 0 && (
+              <button onClick={() => setBioStep(prev => Math.max(0, prev - 1))} className="p-2 -ml-2 text-zinc-400 hover:text-brand-primary transition-colors">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
+            <div className="flex-1 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-brand-primary to-brand-accent rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${((bioStep + 1) / BIO_STEPS) * 100}%` }}
+                transition={{ duration: 0.3 }}
               />
             </div>
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-brand-primary px-2 mb-2 block flex items-center justify-between">
-                <span>Your Date of Birth</span>
-                <span className="text-[8px] bg-brand-primary/10 px-2 py-0.5 rounded-full normal-case font-black">Age autocalculated</span>
-              </label>
-              <input 
-                type="date"
-                value={userProfile.dob || ''}
-                max={new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDate()).toISOString().split('T')[0]}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  const computedAge = calculateAge(val);
-                  setUserProfile(prev => ({ ...prev, dob: val, age: computedAge }));
-                }}
-                className="w-full p-4 bg-white dark:bg-zinc-900 text-zinc-750 dark:text-zinc-100 rounded-2xl border-2 border-transparent focus:border-brand-primary dark:focus:border-brand-primary shadow-sm font-bold outline-none transition-all cursor-pointer"
-              />
-              {userProfile.dob && (() => {
-                const dobDate = new Date(userProfile.dob);
-                const today = new Date();
-                const age18Date = new Date(dobDate.getFullYear() + 18, dobDate.getMonth(), dobDate.getDate());
-                const isUnder18 = today < age18Date;
-                if (isUnder18) {
-                  const daysLeft = Math.ceil((age18Date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                  return (
-                    <p className="text-red-500 text-xs font-bold px-2 pt-1.5 bg-red-50 dark:bg-red-950/20 rounded-xl py-2 mt-1">
-                      You must be 18 or older to join LoKey. Come back in {daysLeft} day{daysLeft !== 1 ? 's' : ''}!
-                    </p>
-                  );
-                }
-                return (
-                  <p className="text-zinc-500 text-xs font-semibold px-2 pt-1.5">
-                    Age: <span className="text-zinc-850 dark:text-zinc-100 font-extrabold">{userProfile.age}</span> years old
-                  </p>
-                );
-              })()}
-            </div>
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-2 mb-2 block">Where do you study? <span className="normal-case font-semibold text-zinc-300">(optional)</span></label>
-              <input
-                type="text"
-                list="nz-unis"
-                value={userProfile.school || ''}
-                onChange={(e) => setUserProfile(prev => ({ ...prev, school: e.target.value }))}
-                placeholder="Start typing your institution..."
-                className="w-full p-4 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-100 rounded-2xl border-2 border-transparent focus:border-brand-primary dark:focus:border-brand-primary shadow-sm font-bold outline-none transition-all"
-              />
-              <datalist id="nz-unis">
-                <option value="University of Otago" />
-                <option value="Otago Polytechnic" />
-                <option value="Victoria University of Wellington" />
-                <option value="University of Auckland" />
-                <option value="Auckland University of Technology" />
-                <option value="Massey University" />
-                <option value="University of Canterbury" />
-                <option value="Lincoln University" />
-                <option value="University of Waikato" />
-                <option value="NMIT (Nelson Marlborough)" />
-                <option value="Ara Institute of Canterbury" />
-                <option value="UNITEC" />
-                <option value="Not a student" />
-              </datalist>
-            </div>
-            
-            {/* Added Genders selection */}
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-2 mb-2 block">What is your gender?</label>
-              <div className="grid grid-cols-3 gap-2">
-                {genders.map(gender => (
-                  <button
-                    key={gender}
-                    type="button"
-                    onClick={() => setUserProfile(prev => ({ ...prev, gender }))}
-                    className={`p-3 rounded-xl font-bold text-center text-xs transition-all ${userProfile.gender === gender ? 'bg-brand-primary text-white shadow-md' : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-100 dark:border-zinc-800'}`}
-                  >
-                    {gender}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Who user is open to seeing */}
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-2 mb-2 block">Who are you open to seeing? (Tick multiple if applicable)</label>
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                {orientations.map(opt => (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => toggleInterestedIn(opt)}
-                    className={`p-3 rounded-xl font-bold text-center text-xs transition-all flex items-center justify-center gap-1 ${userProfile.interestedIn?.includes(opt) ? 'bg-brand-primary text-white shadow-md' : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-100 dark:border-zinc-800'}`}
-                  >
-                    {opt}
-                    {userProfile.interestedIn?.includes(opt) && <Check className="w-3.5 h-3.5" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Hobbies list */}
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-2 mb-1 block">Specify your hobbies (Pick any)</label>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {hobbiesOptions.map(hobby => {
-                  const selected = userProfile.hobbies?.includes(hobby);
-                  return (
-                    <button
-                      key={hobby}
-                      type="button"
-                      onClick={() => toggleHobby(hobby)}
-                      className={`px-3 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1 ${selected ? 'bg-brand-accent text-white shadow-sm' : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border border-zinc-100 dark:border-zinc-800'}`}
-                    >
-                      {hobby}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-2 mb-2 block">What do you do for work?</label>
-              <input
-                type="text"
-                value={userProfile.job || ''}
-                onChange={(e) => setUserProfile(prev => ({ ...prev, job: e.target.value }))}
-                placeholder="E.g. Student, Barista, Nurse, Developer..."
-                className="w-full p-4 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-100 rounded-2xl border-2 border-transparent focus:border-brand-primary dark:focus:border-brand-primary shadow-sm font-bold outline-none transition-all"
-              />
-            </div>
+            <span className="text-[10px] font-black text-zinc-400 shrink-0">{bioStep + 1}/{BIO_STEPS}</span>
           </div>
         </div>
 
-        <button 
-          onClick={async () => {
-            const isUnder18 = userProfile.dob ? (() => {
-              const dobDate = new Date(userProfile.dob!);
-              const today = new Date();
-              const age18Date = new Date(dobDate.getFullYear() + 18, dobDate.getMonth(), dobDate.getDate());
-              return today < age18Date;
-            })() : false;
-            if (userProfile.name && userProfile.age && userProfile.gender && userProfile.interestedIn?.length && !isUnder18) {
-              await updateProfile({
-                ...userProfile,
-                hasConfirmedNameAge: true,
-              });
-              setView('onboarding');
-            }
-          }}
-          disabled={!userProfile.name || !userProfile.age || !userProfile.gender || !userProfile.interestedIn?.length || (userProfile.dob ? (() => { const d = new Date(userProfile.dob!); const t = new Date(); return t < new Date(d.getFullYear() + 18, d.getMonth(), d.getDate()); })() : false)}
-          className="mt-4 w-full bg-brand-primary text-white py-4 rounded-2xl font-bold text-md flex items-center justify-center gap-2 disabled:opacity-50 shadow-md"
-        >
-          Continue
-          <ChevronRight className="w-5 h-5" />
-        </button>
+        {/* Question */}
+        <div className="flex-1 flex flex-col px-6 pt-4">
+          <motion.div
+            key={bioStep}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.25 }}
+            className="flex-1 flex flex-col"
+          >
+            <h2 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 mb-8">{stepTitles[bioStep]}</h2>
+
+            {/* Step 0: Name */}
+            {bioStep === 0 && (
+              <input
+                type="text"
+                autoFocus
+                value={userProfile.name || ''}
+                onChange={(e) => setUserProfile(prev => ({ ...prev, name: e.target.value }))}
+                onKeyDown={(e) => e.key === 'Enter' && stepCanContinue[0] && handleBioNext()}
+                placeholder="Your first name..."
+                className="w-full p-5 text-2xl font-black bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 rounded-2xl border-2 border-transparent focus:border-brand-primary outline-none shadow-sm transition-all"
+              />
+            )}
+
+            {/* Step 1: DOB */}
+            {bioStep === 1 && (
+              <div className="space-y-3">
+                <input
+                  type="date"
+                  autoFocus
+                  value={userProfile.dob || ''}
+                  max={new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDate()).toISOString().split('T')[0]}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setUserProfile(prev => ({ ...prev, dob: val, age: calculateAge(val) }));
+                  }}
+                  className="w-full p-5 text-lg font-bold bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 rounded-2xl border-2 border-transparent focus:border-brand-primary outline-none shadow-sm transition-all cursor-pointer"
+                />
+                {userProfile.dob && !isUnder18 && (
+                  <p className="text-zinc-400 text-sm font-semibold px-1">Age: <span className="text-zinc-900 dark:text-zinc-100 font-black">{userProfile.age}</span></p>
+                )}
+                {userProfile.dob && isUnder18 && (
+                  <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-2xl p-4">
+                    <p className="text-red-500 font-bold text-sm">You must be 18+ to join LoKey.</p>
+                    <p className="text-red-400 text-xs mt-1">Come back in <span className="font-black">{daysLeft} days</span>!</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step 2: Gender */}
+            {bioStep === 2 && (
+              <div className="flex flex-col gap-3">
+                {genders.map(g => (
+                  <button key={g} type="button" onClick={() => setUserProfile(prev => ({ ...prev, gender: g }))}
+                    className={`w-full p-5 rounded-2xl font-black text-left text-base transition-all ${userProfile.gender === g ? 'bg-brand-primary text-white shadow-lg scale-[1.02]' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border border-zinc-100 dark:border-zinc-800'}`}>
+                    {g}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Step 3: Interested in */}
+            {bioStep === 3 && (
+              <div className="flex flex-col gap-3">
+                <p className="text-zinc-400 dark:text-zinc-500 text-sm font-medium -mt-4 mb-2">Select all that apply</p>
+                {orientations.map(opt => (
+                  <button key={opt} type="button" onClick={() => toggleInterestedIn(opt)}
+                    className={`w-full p-5 rounded-2xl font-black text-left text-base transition-all flex justify-between items-center ${userProfile.interestedIn?.includes(opt) ? 'bg-brand-primary text-white shadow-lg scale-[1.02]' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border border-zinc-100 dark:border-zinc-800'}`}>
+                    {opt}
+                    {userProfile.interestedIn?.includes(opt) && <Check className="w-5 h-5" />}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Step 4: Hobbies */}
+            {bioStep === 4 && (
+              <div>
+                <p className="text-zinc-400 dark:text-zinc-500 text-sm font-medium -mt-4 mb-4">Pick as many as you like</p>
+                <div className="flex flex-wrap gap-2">
+                  {hobbiesOptions.map(hobby => {
+                    const sel = userProfile.hobbies?.includes(hobby);
+                    return (
+                      <button key={hobby} type="button" onClick={() => toggleHobby(hobby)}
+                        className={`px-4 py-2.5 rounded-full text-sm font-bold transition-all ${sel ? 'bg-brand-accent text-white shadow-sm scale-105' : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border border-zinc-100 dark:border-zinc-800'}`}>
+                        {hobby}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Step 5: School */}
+            {bioStep === 5 && (
+              <div className="space-y-3">
+                <p className="text-zinc-400 dark:text-zinc-500 text-sm font-medium -mt-4 mb-2">Optional</p>
+                <input
+                  type="text"
+                  autoFocus
+                  list="nz-unis"
+                  value={userProfile.school || ''}
+                  onChange={(e) => setUserProfile(prev => ({ ...prev, school: e.target.value }))}
+                  placeholder="Start typing your institution..."
+                  className="w-full p-5 text-base font-bold bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 rounded-2xl border-2 border-transparent focus:border-brand-primary outline-none shadow-sm transition-all"
+                />
+                <datalist id="nz-unis">
+                  <option value="University of Otago" /><option value="Otago Polytechnic" />
+                  <option value="Victoria University of Wellington" /><option value="University of Auckland" />
+                  <option value="Auckland University of Technology" /><option value="Massey University" />
+                  <option value="University of Canterbury" /><option value="Lincoln University" />
+                  <option value="University of Waikato" /><option value="NMIT (Nelson Marlborough)" />
+                  <option value="Ara Institute of Canterbury" /><option value="UNITEC" />
+                  <option value="Not a student" />
+                </datalist>
+              </div>
+            )}
+
+            {/* Step 6: Occupation */}
+            {bioStep === 6 && (
+              <div className="space-y-3">
+                <p className="text-zinc-400 dark:text-zinc-500 text-sm font-medium -mt-4 mb-2">Optional</p>
+                <input
+                  type="text"
+                  autoFocus
+                  value={userProfile.job || ''}
+                  onChange={(e) => setUserProfile(prev => ({ ...prev, job: e.target.value }))}
+                  onKeyDown={(e) => e.key === 'Enter' && handleBioNext()}
+                  placeholder="E.g. Student, Barista, Nurse, Developer..."
+                  className="w-full p-5 text-base font-bold bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 rounded-2xl border-2 border-transparent focus:border-brand-primary outline-none shadow-sm transition-all"
+                />
+              </div>
+            )}
+          </motion.div>
+        </div>
+
+        {/* Continue button */}
+        <div className="px-6 pb-8 pt-4">
+          <button
+            onClick={handleBioNext}
+            disabled={!stepCanContinue[bioStep]}
+            className="w-full btn-glass-primary py-4 rounded-2xl font-black text-base flex items-center justify-center gap-2 disabled:opacity-40 shadow-lg"
+          >
+            {bioStep === BIO_STEPS - 1 ? 'Build My Profile' : 'Continue'}
+            <ChevronRight className="w-5 h-5" />
+          </button>
+          {bioStep >= 4 && (
+            <button onClick={handleBioNext} className="w-full text-center text-xs text-zinc-400 dark:text-zinc-500 font-semibold mt-3 py-2">
+              Skip for now
+            </button>
+          )}
+        </div>
       </div>
     );
   };
