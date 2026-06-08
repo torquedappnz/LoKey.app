@@ -644,45 +644,21 @@ function AppContent() {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      setUploadError("File exceeds 2MB limits. Select a smaller picture.");
-      return;
-    }
-
     setIsUploading(true);
     setUploadError(null);
-    setUploadProgress(10);
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      setUploadProgress(70);
-      const base64Data = event.target?.result as string;
-      
-      try {
-        // Attempt to upload to default Supabase photos bucket
-        const fileName = `${user.id}_portrait_${Date.now()}.png`;
-        const { error } = await supabase.storage
-          .from('photos')
-          .upload(fileName, file);
-
-        if (error) {
-          console.warn("Storage upload failed, fallback directly to Base64:", error.message);
-        }
-      } catch (e) {
-        console.warn("Supabase bucket not accessible, using Base64 directly.");
-      }
-
-      // Merge base64 photo so it never fails or gets stuck!
-      setUserProfile(prev => ({ ...prev, imageUrl: base64Data }));
-      await updateProfile({ imageUrl: base64Data });
+    setUploadProgress(20);
+    try {
+      const compressed = await compressImage(file);
+      setUploadProgress(80);
+      setUserProfile(prev => ({ ...prev, imageUrl: compressed }));
+      await updateProfile({ imageUrl: compressed });
       setUploadProgress(100);
-      setIsUploading(false);
-
       setTimeout(() => handleCompleteOnboarding(), 600);
-    };
-
-    reader.readAsDataURL(file);
+    } catch {
+      setUploadError("Could not process image. Try another photo.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Onboarding answers loop
@@ -1865,42 +1841,53 @@ function AppContent() {
   // 5. Onboarding Photo Upload (Base64 fail-safe direct storage) — supports up to 6 photos
   const photoSlotRefs = [photoSlotRef0, photoSlotRef1, photoSlotRef2, photoSlotRef3, photoSlotRef4, photoSlotRef5];
 
+  // Compress image to JPEG ≤200KB using canvas before storing as base64
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        const MAX = 900;
+        let { width, height } = img;
+        if (width > height) { if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; } }
+        else { if (height > MAX) { width = Math.round(width * MAX / height); height = MAX; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+        URL.revokeObjectURL(objectUrl);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.src = objectUrl;
+    });
+  };
+
   const handlePhotoSlotUpload = async (e: React.ChangeEvent<HTMLInputElement>, slotIndex: number) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setUploadError("File exceeds 2MB limits. Select a smaller picture.");
-      return;
-    }
-
     setIsUploading(true);
     setUploadError(null);
-    setUploadProgress(10);
+    setUploadProgress(20);
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
+    try {
+      const compressed = await compressImage(file);
       setUploadProgress(70);
-      const base64Data = event.target?.result as string;
-
-      try {
-        const fileName = `${user.id}_photo_${slotIndex}_${Date.now()}.png`;
-        await supabase.storage.from('photos').upload(fileName, file);
-      } catch (e) {
-        console.warn("Supabase bucket not accessible, using Base64 directly.");
-      }
 
       const currentPhotos = userProfile.photos ? [...userProfile.photos] : [];
-      currentPhotos[slotIndex] = base64Data;
-      const newPhotos = currentPhotos;
-      const newImageUrl = slotIndex === 0 ? base64Data : (userProfile.imageUrl || base64Data);
+      currentPhotos[slotIndex] = compressed;
+      const newPhotos = currentPhotos.slice(0, 6);
+      const newImageUrl = slotIndex === 0 ? compressed : (userProfile.imageUrl || compressed);
 
       setUserProfile(prev => ({ ...prev, imageUrl: newImageUrl, photos: newPhotos }));
       await updateProfile({ imageUrl: newImageUrl, photos: newPhotos });
       setUploadProgress(100);
+    } catch (err) {
+      setUploadError("Could not process image. Try a different photo.");
+    } finally {
       setIsUploading(false);
-    };
-    reader.readAsDataURL(file);
+      e.target.value = '';
+    }
   };
 
   const renderOnboardingPhoto = () => {
